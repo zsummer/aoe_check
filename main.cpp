@@ -231,21 +231,6 @@ TestRange g_tr[TEST_RANGE_SIZE] =
     { { -0.5f, 0.5f , 0.0f }, { 0.0,1.0,1.0 }, { 1.0,1.0,1.0 } }
 };
 
-bool fast_check_write_log(FNLog::Logger& logger, u32 channel_id, u32 priority, u32 category)
-{
-    if (logger.channel_size_ <= channel_id || !logger.channels_[channel_id].actived_ || priority < logger.channels_[channel_id].config_fields_[FNLog::CHANNEL_CFG_PRIORITY].num_)
-    {
-        return false;
-    }
-    for (size_t i = 0; i < logger.channels_[channel_id].device_size_; i++)
-    {
-        if (logger.channels_[channel_id].devices_[i].config_fields_[FNLog::DEVICE_CFG_ABLE].num_ && priority >= logger.channels_[channel_id].devices_[i].config_fields_[FNLog::DEVICE_CFG_PRIORITY].num_)
-        {
-            return true;
-        }
-    }
-    return false;
-}
 
 
 void stress_2d()
@@ -286,7 +271,8 @@ int main(void)
 #endif
     srand((unsigned int)time(NULL));
 
-    FNLog::FastStartSimpleLogger();
+    FNLog::FastStartDebugLogger();
+    FNLog::BatchSetChannelConfig(FNLog::GetDefaultLogger(), FNLog::CHANNEL_CFG_PRIORITY, FNLog::PRIORITY_INFO);
     stress_2d();
 
 
