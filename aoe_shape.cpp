@@ -16,7 +16,9 @@
 */
 
 #include "aoe_shape.h"
-
+#include "glm/glm.hpp"
+#include "glm/matrix.hpp"
+#include "glm/gtc/matrix_transform.hpp"
 
 s32 AreaShapeRect::Init(DeviationShape deviation, f32 radius, bool collide_test, bool frame_test)
 {
@@ -115,7 +117,7 @@ s32 AreaShapeRect::PointInRange(const Point3& pos, f32 radius, f32 & dist_sq)
             return 0;
         }
         Point3 cross = line.cross(test_side);
-        if (cross.z < 0)
+        if (cross.z < 0) //
         {
             if (radius < FLOAT_POINT_PRECISION)
             {
@@ -297,6 +299,212 @@ s32 AreaShapeCircle::PointInRange(const Point3& pos, f32 radius, f32 & dist_sq)
 }
 
 
+s32 AreaShapeFov::Init(DeviationShape deviation, f32 radius)
+{
+    shape = deviation;
+    return 0;
+}
+
+
+s32 AreaShapeFov::PointInRange(const Point3& pos, f32 radius, f32& dist_sq)
+{
+    (void)radius;
+    Point3 apex = shape.pivot_pos;
+    Point3 dir = shape.pivot_dir;
+    float pitch = shape.pivot_offset.z; 
+    float yaw = shape.pivot_offset.x; 
+    float fov = shape.pivot_scale.x; 
+    float aspect = shape.pivot_scale.y; 
+    float near_radius = shape.pivot_ext.x;
+    float far_radius = shape.pivot_scale.z; 
+    Point3 check_pos = pos;
+    if (fov <= FLOAT_POINT_PRECISION || aspect <= FLOAT_POINT_PRECISION)
+    {
+        return 1;
+    }
+    if (near_radius + far_radius < FLOAT_POINT_PRECISION)
+    {
+        return 2;
+    }
+    if (dir.is_zero())
+    {
+        return 3;
+    }
+
+    Point3 target_dir = check_pos - apex;
+    float dist_check = target_dir.length();
+    dist_sq = dist_check * dist_check;
+    if (dist_check > far_radius)
+    {
+        return 4;
+    }
+    if (target_dir.is_zero())
+    {
+        return 0;
+    }
+
+
+    if (!FLOAT_IS_ZERO(yaw) )
+    {
+        glm::mat4 fov_mat4_dir(1.0f);
+        fov_mat4_dir = glm::rotate(fov_mat4_dir, glm::radians(yaw), glm::vec3(0.0f, 0.0f, 1.0f));
+        glm::vec4 fov_v_dir(dir.x, dir.y, dir.z, 0.0f);
+        fov_v_dir = fov_mat4_dir * fov_v_dir;
+        dir.x = fov_v_dir.x;
+        dir.y = fov_v_dir.y;
+        dir.z = fov_v_dir.z;
+        if (dir.is_zero())
+        {
+            return 8;
+        }
+        dir.normalize();
+    }
+
+    // dir correction
+    if (!FLOAT_IS_ZERO(pitch) )
+    {
+        Point3 right = dir.cross(FLOAT_UNIT_Z);
+        right.normalize();
+        glm::mat4 fov_mat4_dir(1.0f);
+        fov_mat4_dir = glm::rotate(fov_mat4_dir, glm::radians(pitch), glm::vec3(right.x, right.y, right.z));
+        glm::vec4 fov_v_dir(dir.x, dir.y, dir.z, 0.0f);
+        fov_v_dir = fov_mat4_dir * fov_v_dir;
+        dir.x = fov_v_dir.x;
+        dir.y = fov_v_dir.y;
+        dir.z = fov_v_dir.z;
+        if (dir.is_zero())
+        {
+            return 7;
+        }
+        dir.normalize();
+    }
+
+
+
+    target_dir.normalize();
+    float max_fov = std::fmaxf(fov, fov * aspect);
+    float cos_angle = target_dir.dot(dir);
+    if (cos_angle < 0.0f)
+    {
+        return 9;
+    }
+    float real_angle = std::acosf(target_dir.dot(dir)) * ANGLE_PER_PI;
+    if (real_angle > max_fov / 2.0f)
+    {
+        return 10;
+    }
+    
+    //视锥检测  
+    Point3 top_dir;
+    Point3 botton_dir;
+    Point3 left_dir;
+    Point3 right_dir;
+    if (true)
+    {   
+        Point3 right = dir.cross(FLOAT_UNIT_Z);
+        right.normalize();
+
+        glm::mat4 mat(1.0f);
+        glm::vec4 v_dir(dir.x, dir.y, dir.z, 1.0f);
+        glm::vec4 v_result;
+        mat = glm::rotate(mat, glm::radians(fov * aspect / 2.0f * 1.0f), glm::vec3(right.x, right.y, right.z));
+        v_result = mat * v_dir;
+        top_dir.x = v_result.x;
+        top_dir.y = v_result.y;
+        top_dir.z = v_result.z;
+
+        mat = glm::mat4(1.0f);
+        mat = glm::rotate(mat, glm::radians(fov * aspect / 2.0f * -1.0f), glm::vec3(right.x, right.y, right.z));
+        v_result = mat * v_dir;
+        botton_dir.x = v_result.x;
+        botton_dir.y = v_result.y;
+        botton_dir.z = v_result.z;
+
+
+
+        mat = glm::mat4(1.0f);
+        mat = glm::rotate(mat, glm::radians(fov / 2.0f * 1.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+        v_result = mat * v_dir;
+        right_dir.x = v_result.x;
+        right_dir.y = v_result.y;
+        right_dir.z = v_result.z;
+
+        mat = glm::mat4(1.0f);
+        mat = glm::rotate(mat, glm::radians(fov / 2.0f * -1.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+        v_result = mat * v_dir;
+        left_dir.x = v_result.x;
+        left_dir.y = v_result.y;
+        left_dir.z = v_result.z;
+    }
+    Point3 right_top_dir = top_dir + (right_dir - left_dir) / 2.0f;
+    Point3 right_botton_dir = botton_dir + (right_dir - left_dir) / 2.0f;
+    Point3 left_botton_dir = botton_dir + (left_dir - right_dir) / 2.0f;
+    Point3 left_top_dir = top_dir + (left_dir - right_dir) / 2.0f;
+
+    right_top_dir.normalize();
+    right_botton_dir.normalize();
+    left_botton_dir.normalize();
+    left_top_dir.normalize();
+
+
+    //return 0;
+    //四楞体视锥
+    Point3 normal = right_top_dir.cross(left_top_dir);
+    float diff = normal.dot(target_dir);
+    u32 sign_bit = SignBitF(diff);
+    normal = right_botton_dir.cross(left_botton_dir);
+    diff = normal.dot(target_dir);
+    if (SignBitF(diff) == sign_bit)
+    {
+        return 15;
+    }
+    normal = left_botton_dir.cross(left_top_dir);
+    diff = normal.dot(target_dir);
+    sign_bit = SignBitF(diff);
+    normal = right_botton_dir.cross(right_top_dir);
+    diff = normal.dot(target_dir);
+    if (SignBitF(diff) == sign_bit)
+    {
+        return 17;
+    }
+
+    //近距
+    if (dist_check <= near_radius)
+    {
+        return 0;
+    }
+
+    Point3 right_top_pos = apex + right_top_dir * near_radius;
+    Point3 right_botton_pos = apex + right_botton_dir * near_radius;
+    Point3 left_botton_pos = apex + left_botton_dir * near_radius;
+    Point3 left_top_pos = apex + left_top_dir * near_radius;
+
+    //长方体远摄
+    diff = (check_pos - left_top_pos).dot(botton_dir - top_dir);
+    sign_bit = SignBitF(diff);
+    diff = (check_pos - left_botton_pos).dot(botton_dir - top_dir);
+    if (SignBitF(diff) == sign_bit)
+    {
+        return 20;
+    }
+
+    diff = (check_pos - left_top_pos).dot(right_dir - left_dir);
+    sign_bit = SignBitF(diff);
+    diff = (check_pos - right_top_pos).dot(right_dir - left_dir);
+    if (SignBitF(diff) == sign_bit)
+    {
+        return 21;
+    }
+
+    return 0;
+}
+
+
+
+
+
+
+
 AreaShape::AreaShape()
 {
     shape_type_ = -1;
@@ -341,6 +549,9 @@ s32 AreaShape::Init(u32 shape_type, DeviationShape deviation, f32 radius)
     case AREA_SHAPE_FRAME:
         ret = rect_.Init(deviation, radius, true, true);
         break;
+    case AREA_SHAPE_FOV:
+        ret = fov_.Init(deviation, radius);
+        break;
     default:
         LOGFMTE("unknown range shape_type:<%u>", shape_type);
         return -5;
@@ -379,6 +590,9 @@ s32 AreaShape::PointInRange(const Point3& pos, f32 radius, f32& dist_sq)
         break;
     case AREA_SHAPE_FRAME:
         ret = rect_.PointInRange(pos, radius, dist_sq);
+        break;
+    case AREA_SHAPE_FOV:
+        ret = fov_.PointInRange(pos, radius, dist_sq);
         break;
     default:
         LOGFMTE("point in range test error. range not init. pos:<%f,%f,%f>, radius:<%f>, ret:<%d>, shape_type_:<%u>", 

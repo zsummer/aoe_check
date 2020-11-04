@@ -32,7 +32,7 @@ enum AreaShapeType
     AREA_SHAPE_RECT = 2,
     AREA_SHAPE_RING = 3,
     AREA_SHAPE_FRAME = 4,
-    AREA_SHAPE_ALERT_VISUAL = 5,
+    AREA_SHAPE_FOV = 5,
 };
 
 class AreaShapeRect
@@ -84,6 +84,17 @@ private:
 };
 
 
+class AreaShapeFov
+{
+public:
+    //param2为大圆半径, param1为挖空的小圆半径 小圆大小可以为0
+    s32 Init(DeviationShape deviation, f32 radius);
+    s32 PointInRange(const Point3& pos, f32 radius, f32& dist_sq);
+private:
+    DeviationShape shape;
+};
+
+
 
 class AreaShape
 {
@@ -99,6 +110,7 @@ private:
         AreaShapeFan fan_;
         AreaShapeCircle circle_;
         AreaShapeRect rect_;
+        AreaShapeFov fov_;
     };
     u32 shape_type_;
 };

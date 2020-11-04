@@ -25,6 +25,8 @@ static const float PI = 3.1415926535897932f;
 static const float PI_PER_ANGLE = PI / 180.0f;
 static const float ANGLE_PER_PI = 180.0f / PI;
 static const float FLOAT_POINT_PRECISION = 0.0002f;
+
+
 #define SignBitF(f) ((*(u32*)&f) & (1u << 31))
 
 template<class Float>
@@ -139,3 +141,6 @@ public:
 
 
 
+static const Vector3<float> FLOAT_UNIT_X = { 1.0f, 0.0f, 0.0f };
+static const Vector3<float> FLOAT_UNIT_Y = { 0.0f, 1.0f, 0.0f };
+static const Vector3<float> FLOAT_UNIT_Z = { 0.0f, 0.0f, 1.0f };

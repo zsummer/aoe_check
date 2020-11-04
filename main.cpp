@@ -79,13 +79,16 @@
 
 #pragma comment(lib, "OpenGL32")
 #pragma comment(lib, "GLu32")
+#include "glm/glm.hpp"
+#include "glm/matrix.hpp"
+#include "glm/gtc/matrix_transform.hpp"
 
 
 #include "aoe_shape.h"
 #define SCREEN_X 800
 #define SCREEN_Y 800
 #define BENCH_MARK false
-static const int TEST_RANGE_SIZE = 4;
+static const int TEST_RANGE_SIZE = 1;
 static const int SCALAR_NUM = 600;
 static const int SCALAR_BEGIN = SCALAR_NUM / -2;
 static const int SCALAR_END = SCALAR_NUM / 2;
@@ -116,32 +119,41 @@ struct Pixel
 class Shape 
 {
 public:
-    Shape(u32 s, f32 r, Point3 sr)
+    Shape(u32 s, f32 r, Point3 os, Point3 sr, Point3 e)
     {
         specify = s;
         redius = r;
+        offset = os;
         scalar = sr;
+        ext = e;
     }
     u32 specify;
     f32 redius;
     Point3 scalar;
+    Point3 offset;
+    Point3 ext;
 };
 
 std::vector<Shape> g_shapes =
 {
-{AREA_SHAPE_CIRCLE,0.02f,{ 0.0f, 0.2f, 0.2f } },
-{AREA_SHAPE_CIRCLE,0.02f,{ 0.1f, 0.2f, 0.2f } },
-{AREA_SHAPE_FAN,0.02f,{ 180.0f, 0.2f, 0.2f } },
-{AREA_SHAPE_FAN,0.00f,{ 120.0f, 0.2f, 0.2f } },
-{AREA_SHAPE_FAN,0.02f,{ 60.0f, 0.2f, 0.2f } },
-{AREA_SHAPE_FAN,0.00f,{ 60.0f, 0.2f, 0.2f } },
-{AREA_SHAPE_RECT,0.00f,{ 0.2f, 0.2f, 0.2f } },
-{AREA_SHAPE_RECT,0.02f,{ 0.2f, 0.2f, 0.2f } },
-{AREA_SHAPE_RING,0.00f,{ 0.2f, 0.2f, 0.2f } },
-{AREA_SHAPE_RING,0.02f,{ 0.2f, 0.2f, 0.2f } },
-{AREA_SHAPE_RING,0.02f,{ 0.0f, 0.2f, 0.2f } },
-{AREA_SHAPE_FRAME,0.02f,{ 0.2f, 0.2f, 0.2f } },
-{AREA_SHAPE_FRAME,0.00f,{ 0.2f, 0.2f, 0.2f } }
+{AREA_SHAPE_FOV, 0.02f, {40.0f, 0.0f, 40.0f}, { 120.0f, 0.8f, 0.5f }, {0.1f, 0.0f, 0.0f} },
+{AREA_SHAPE_FOV, 0.02f, {40.0f, 0.0f, 20.0f}, { 120.0f, 0.8f, 0.4f }, {0.1f, 0.0f, 0.0f} },
+{AREA_SHAPE_FOV, 0.02f, {0.0f, 0.0f, 0.0f}, { 90.0f, 0.5f, 0.4f }, {0.3f, 0.0f, 0.0f} },
+{AREA_SHAPE_FOV, 0.02f, {0.0f, 0.0f, 0.0f}, { 30.0f, 0.5f, 0.4f }, {0.3f, 0.0f, 0.0f} },
+{AREA_SHAPE_FOV, 0.02f, {0.0f, 0.0f, 0.0f}, { 30.0f, 0.5f, 0.4f }, {0.15f, 0.0f, 0.0f} },
+{AREA_SHAPE_CIRCLE,0.02f, {0.0f, 0.0f, 0.0f}, { 0.0f, 0.2f, 0.2f }, {0.0f, 0.0f, 0.0f} },
+{AREA_SHAPE_CIRCLE,0.02f,{0.0f, 0.0f, 0.0f}, { 0.1f, 0.2f, 0.2f }, {0.0f, 0.0f, 0.0f} },
+{AREA_SHAPE_FAN,0.02f,{0.0f, 0.0f, 0.0f}, { 180.0f, 0.2f, 0.2f }, {0.0f, 0.0f, 0.0f} },
+{AREA_SHAPE_FAN,0.00f,{0.0f, 0.0f, 0.0f}, { 120.0f, 0.2f, 0.2f }, {0.0f, 0.0f, 0.0f} },
+{AREA_SHAPE_FAN,0.02f,{0.0f, 0.0f, 0.0f}, { 60.0f, 0.2f, 0.2f }, {0.0f, 0.0f, 0.0f} },
+{AREA_SHAPE_FAN,0.00f,{0.0f, 0.0f, 0.0f}, { 60.0f, 0.2f, 0.2f }, {0.0f, 0.0f, 0.0f} },
+{AREA_SHAPE_RECT,0.00f,{0.0f, 0.0f, 0.0f}, { 0.2f, 0.2f, 0.2f }, {0.0f, 0.0f, 0.0f} },
+{AREA_SHAPE_RECT,0.02f,{0.0f, 0.0f, 0.0f}, { 0.2f, 0.2f, 0.2f }, {0.0f, 0.0f, 0.0f} },
+{AREA_SHAPE_RING,0.00f,{0.0f, 0.0f, 0.0f}, { 0.2f, 0.2f, 0.2f }, {0.0f, 0.0f, 0.0f} },
+{AREA_SHAPE_RING,0.02f,{0.0f, 0.0f, 0.0f}, { 0.2f, 0.2f, 0.2f }, {0.0f, 0.0f, 0.0f} },
+{AREA_SHAPE_RING,0.02f,{0.0f, 0.0f, 0.0f}, { 0.0f, 0.2f, 0.2f }, {0.0f, 0.0f, 0.0f} },
+{AREA_SHAPE_FRAME,0.02f,{0.0f, 0.0f, 0.0f}, { 0.2f, 0.2f, 0.2f }, {0.0f, 0.0f, 0.0f} },
+{AREA_SHAPE_FRAME,0.00f,{0.0f, 0.0f, 0.0f}, { 0.2f, 0.2f, 0.2f }, {0.0f, 0.0f, 0.0f} }
 };
 
 class TestRange
@@ -154,10 +166,15 @@ public:
     void Test(Point3 dir)
     {
         time_t now = time(NULL);
-        if (now - _last > 1)
+        if (_last == 0)
+        {
+            _last = now;
+        }
+        if (now - _last > 2)
         {
             _last = now;
             _cur_specify++;
+            //_cur_specify %= 1;
             _cur_specify %= g_shapes.size();
 
         }
@@ -167,7 +184,7 @@ public:
         }
         AreaShape range;
         Point3 target = _pos + dir * g_shapes[_cur_specify].scalar.y;
-        s32 ret = range.Init(g_shapes[_cur_specify].specify, { _pos, dir, g_shapes[_cur_specify].scalar }, g_shapes[_cur_specify].redius);
+        s32 ret = range.Init(g_shapes[_cur_specify].specify, { _pos, dir, g_shapes[_cur_specify].offset, g_shapes[_cur_specify].scalar, g_shapes[_cur_specify].ext}, g_shapes[_cur_specify].redius);
         if (ret != 0)
         {
             LOGFMTE("error");
@@ -198,6 +215,12 @@ public:
                 }
             }
         }
+        if (_len < 10)
+        {
+            int a = 1;
+            a++;
+            (void)a;
+        }
 
         if (_len < PIXELS_SIZE + 200)
         {
@@ -217,7 +240,7 @@ public:
     size_t _len = 0;
     time_t _last = 0;
     size_t _cur_specify = 0;
-    size_t _cur_locked_specify = 1;
+    size_t _cur_locked_specify = 0;
     Point3 _pos;
     Point3 _color_redius;
     Point3 _color;
@@ -225,21 +248,30 @@ public:
 
 TestRange g_tr[TEST_RANGE_SIZE] =
 {
-    { { -0.5f, -0.5f, 0.0f }, { 0.0,1.0,1.0 }, { 1.0,1.0,1.0 }},
+ /*   { { -0.5f, -0.5f, 0.0f }, { 0.0,1.0,1.0 }, { 1.0,1.0,1.0 }},
     { { 0.5f, -0.5f , 0.0f }, { 0.0,1.0,1.0 }, { 1.0,1.0,1.0 } },
     { { 0.5f, 0.5f  , 0.0f }, { 0.0,1.0,1.0 }, { 1.0,1.0,1.0 } },
-    { { -0.5f, 0.5f , 0.0f }, { 0.0,1.0,1.0 }, { 1.0,1.0,1.0 } }
+    { { -0.5f, 0.5f , 0.0f }, { 0.0,1.0,1.0 }, { 1.0,1.0,1.0 } }*/
+    { { 0.0f, 0.05f , 0.0f }, { 0.0,1.0,1.0 }, { 1.0,1.0,1.0 } }
 };
 
 
 
 void stress_2d()
 {
+    float fov = 120.0f;
+    float aspect = 0.8f;
+    glm::mat4 mat(1.0f);
+    glm::vec4 v_dir(-0.8f, 0.6f, 0.4f, 1.0f);
+    auto v = v_dir *mat;
+    mat = glm::rotate(mat, glm::radians(fov * aspect / 2.0f * 1.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+    v_dir = mat * v_dir;
+
     auto old = g_shapes[6];
     g_tr[0]._cur_locked_specify = 6;
-    for (auto t : {AREA_SHAPE_CIRCLE,AREA_SHAPE_FAN,AREA_SHAPE_RECT,AREA_SHAPE_RING,AREA_SHAPE_FRAME })
+    for (auto t : {AREA_SHAPE_CIRCLE,AREA_SHAPE_FAN,AREA_SHAPE_RECT,AREA_SHAPE_RING,AREA_SHAPE_FRAME, AREA_SHAPE_FOV })
     {
-        g_shapes[6] = Shape(t, 0.02f, { 60.0f, 0.2f, 0.2f });
+        g_shapes[6] = Shape(t, 0.02f, { 0.0f, 0.0f, 0.0f }, { 60.0f, 0.5f, 0.8f }, { 0.5f, 0.0f, 0.0f });
         double now = Now();
         g_tr[0].Test({ 0.0,1.0,1.0 });
         LogInfo() << "used time:" << (Now() - now) / ((SCALAR_END - SCALAR_BEGIN) * (SCALAR_END - SCALAR_BEGIN)) * 1000 * 10000;
