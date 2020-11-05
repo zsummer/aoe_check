@@ -88,7 +88,7 @@
 #define SCREEN_X 800
 #define SCREEN_Y 800
 #define BENCH_MARK false
-static const int TEST_RANGE_SIZE = 1;
+static const int TEST_RANGE_SIZE = 4;
 static const int SCALAR_NUM = 600;
 static const int SCALAR_BEGIN = SCALAR_NUM / -2;
 static const int SCALAR_END = SCALAR_NUM / 2;
@@ -141,6 +141,7 @@ std::vector<Shape> g_shapes =
 {AREA_SHAPE_FOV, 0.02f, {0.0f, 0.0f, 0.0f}, { 90.0f, 0.5f, 0.4f }, {0.3f, 0.0f, 0.0f} },
 {AREA_SHAPE_FOV, 0.02f, {0.0f, 0.0f, 0.0f}, { 30.0f, 0.5f, 0.4f }, {0.3f, 0.0f, 0.0f} },
 {AREA_SHAPE_FOV, 0.02f, {0.0f, 0.0f, 0.0f}, { 30.0f, 0.5f, 0.4f }, {0.15f, 0.0f, 0.0f} },
+{AREA_SHAPE_FOV, 0.02f, {0.0f, 0.0f, 0.0f}, { 30.0f, 1.5f, 0.4f }, {0.15f, 0.0f, 0.0f} },
 {AREA_SHAPE_CIRCLE,0.02f, {0.0f, 0.0f, 0.0f}, { 0.0f, 0.2f, 0.2f }, {0.0f, 0.0f, 0.0f} },
 {AREA_SHAPE_CIRCLE,0.02f,{0.0f, 0.0f, 0.0f}, { 0.1f, 0.2f, 0.2f }, {0.0f, 0.0f, 0.0f} },
 {AREA_SHAPE_FAN,0.02f,{0.0f, 0.0f, 0.0f}, { 180.0f, 0.2f, 0.2f }, {0.0f, 0.0f, 0.0f} },
@@ -246,12 +247,12 @@ public:
     Point3 _color;
 };
 
-TestRange g_tr[TEST_RANGE_SIZE] =
+TestRange g_tr[] =
 {
- /*   { { -0.5f, -0.5f, 0.0f }, { 0.0,1.0,1.0 }, { 1.0,1.0,1.0 }},
+    { { -0.5f, -0.5f, 0.0f }, { 0.0,1.0,1.0 }, { 1.0,1.0,1.0 }},
     { { 0.5f, -0.5f , 0.0f }, { 0.0,1.0,1.0 }, { 1.0,1.0,1.0 } },
     { { 0.5f, 0.5f  , 0.0f }, { 0.0,1.0,1.0 }, { 1.0,1.0,1.0 } },
-    { { -0.5f, 0.5f , 0.0f }, { 0.0,1.0,1.0 }, { 1.0,1.0,1.0 } }*/
+    { { -0.5f, 0.5f , 0.0f }, { 0.0,1.0,1.0 }, { 1.0,1.0,1.0 } },
     { { 0.0f, 0.05f , 0.0f }, { 0.0,1.0,1.0 }, { 1.0,1.0,1.0 } }
 };
 

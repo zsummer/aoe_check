@@ -23,7 +23,17 @@
 #include "vector3.h"
 #include <array>
 
-struct DeviationShape;
+using Point3 = Vector3<float>;
+
+
+struct DeviationShape
+{
+    Point3 pivot_pos;   //轴点坐标, 三组数据用来查看服务器选定目标的区域形状参数, 配置无效的情况下这三组数据同样无效.
+    Point3 pivot_dir;   //朝向.
+    Point3 pivot_offset; //上, 右
+    Point3 pivot_scale; //长宽高,弧度半径高, 内径外径高
+    Point3 pivot_ext;   //扩展
+};
 
 enum AreaShapeType
 {
