@@ -64,10 +64,15 @@ public:
 
     void reset() { x = 0.0f; y = 0.0f; z = 0.0f; }
     Float dot(const Vector3& v) const { return x * v.x + y * v.y + z * v.z; };
+    Float dot_2d(const Vector3& v) const { return x * v.x + y * v.y; };
     Vector3 det(const Vector3& v) const { return { y * v.z - z * v.y , z * v.x - x * v.z , x * v.y - y * v.x }; };
+    Vector3 det_2d(const Vector3& v) const { return { 0.0f , 0.0 , x * v.y - y * v.x }; };
     Vector3 cross(const Vector3& v) const { return det(v); }
+    Vector3 cross_2d(const Vector3& v) const { return det_2d(v); }
     Float square_length()const { return dot(*this); }
+    Float square_length_2d()const { return dot_2d(*this); }
     Float length()const { return sqrtf(square_length()); }
+    Float length_2d()const { return sqrtf(square_length_2d()); }
     bool is_zero() const { return FLOAT_IS_ZERO(x) && FLOAT_IS_ZERO(y) && FLOAT_IS_ZERO(z); }
     bool is_valid() const{return !std::isnan(x) && !std::isnan(y) && !std::isnan(z) && !std::isinf(x) && !std::isinf(y) && !std::isinf(z);}
     //单位化
@@ -91,7 +96,7 @@ public:
         return true;
     }
 
-
+    //球面
     Float to_agnle() const
     {
         Float radian = dot({ 1.0f, 0.0f, 0.0f });
@@ -137,10 +142,13 @@ public:
     Vector3 & operator *= (Float scalar) { x *= scalar, y *= scalar, z *= scalar; return *this; }
     Vector3 operator / (Float scalar) const { return { x / scalar, y / scalar, z / scalar }; }
     Vector3 & operator /= (Float scalar) { x /= scalar, y /= scalar, z /= scalar; return *this; }
+
+
 };
 
 
 
-static const Vector3<float> FLOAT_UNIT_X = { 1.0f, 0.0f, 0.0f };
-static const Vector3<float> FLOAT_UNIT_Y = { 0.0f, 1.0f, 0.0f };
-static const Vector3<float> FLOAT_UNIT_Z = { 0.0f, 0.0f, 1.0f };
+static const Vector3<float> POINT_FLOAT_ZERO = { 0.0f, 0.0f, 0.0f };
+static const Vector3<float> POINT_FLOAT_UNIT_X = { 1.0f, 0.0f, 0.0f };
+static const Vector3<float> POINT_FLOAT_UNIT_Y = { 0.0f, 1.0f, 0.0f };
+static const Vector3<float> POINT_FLOAT_UNIT_Z = { 0.0f, 0.0f, 1.0f };

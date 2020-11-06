@@ -16,8 +16,8 @@
 */
 
 #pragma once
-#ifndef SPELL_RANGE_H
-#define SPELL_RANGE_H
+#ifndef AOE_SHAPE_H
+#define AOE_SHAPE_H
 
 #include "aoe_common.h"
 #include "vector3.h"

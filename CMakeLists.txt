@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.7)
-project(range_scan)
+project(aoe_check)
 enable_language(ASM)
 
 #from github.com/zsummer
@@ -66,6 +66,8 @@ FILE(GLOB_RECURSE SOURCES_C ${CMAKE_SOURCE_DIR}/*.c ${CMAKE_SOURCE_DIR}/*.cpp ${
 # list(FILTER <list> <INCLUDE|EXCLUDE> REGEX <regular_expression>)  
 LIST(FILTER SOURCES_H EXCLUDE REGEX "build")
 LIST(FILTER SOURCES_C EXCLUDE REGEX "build")
+LIST(FILTER SOURCES_H EXCLUDE REGEX "vs_sln")
+LIST(FILTER SOURCES_C EXCLUDE REGEX "vs_sln")
 set(SOURCES ${SOURCES_H} ${SOURCES_C})
 GROUP_SRC_BY_DIR(SOURCES)
 

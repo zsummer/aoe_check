@@ -183,6 +183,7 @@ public:
         {
             _cur_specify = _cur_locked_specify;
         }
+
         AreaShape range;
         Point3 target = _pos + dir * g_shapes[_cur_specify].scalar.y;
         s32 ret = range.Init(g_shapes[_cur_specify].specify, { _pos, dir, g_shapes[_cur_specify].offset, g_shapes[_cur_specify].scalar, g_shapes[_cur_specify].ext}, g_shapes[_cur_specify].redius);

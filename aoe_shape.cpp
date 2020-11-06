@@ -86,7 +86,7 @@ s32 AreaShapeRect::PointInRange(const Point3& pos, f32 radius, f32 & dist_sq)
         return 1;
     }
 
-    dist_sq = Point3(pos.x - anchor_.x, pos.y - anchor_.y, 0.0f).square_length();
+    dist_sq = (pos - anchor_).square_length_2d();
     if (collide_test_ && dist_sq < FLOAT_POINT_PRECISION)
     {
         return 0;
@@ -363,7 +363,7 @@ s32 AreaShapeFov::PointInRange(const Point3& pos, f32 radius, f32& dist_sq)
     // dir correction
     if (!FLOAT_IS_ZERO(pitch) )
     {
-        Point3 right = dir.cross(FLOAT_UNIT_Z);
+        Point3 right = dir.cross(POINT_FLOAT_UNIT_Z);
         right.normalize();
         glm::mat4 fov_mat4_dir(1.0f);
         fov_mat4_dir = glm::rotate(fov_mat4_dir, glm::radians(pitch), glm::vec3(right.x, right.y, right.z));
@@ -401,7 +401,7 @@ s32 AreaShapeFov::PointInRange(const Point3& pos, f32 radius, f32& dist_sq)
     Point3 right_dir;
     if (true)
     {   
-        Point3 right = dir.cross(FLOAT_UNIT_Z);
+        Point3 right = dir.cross(POINT_FLOAT_UNIT_Z);
         right.normalize();
 
         glm::mat4 mat(1.0f);
