@@ -257,6 +257,62 @@ TestRange g_tr[] =
     { { 0.0f, 0.05f , 0.0f }, { 0.0,1.0,1.0 }, { 1.0,1.0,1.0 } }
 };
 
+inline void rcVcross(float* dest, const float* v1, const float* v2)
+{
+    dest[0] = v1[1] * v2[2] - v1[2] * v2[1];
+    dest[1] = v1[2] * v2[0] - v1[0] * v2[2];
+    dest[2] = v1[0] * v2[1] - v1[1] * v2[0];
+}
+
+inline float rcVdot(const float* v1, const float* v2)
+{
+    return v1[0] * v2[0] + v1[1] * v2[1] + v1[2] * v2[2];
+}
+inline void rcVsub(float* dest, const float* v1, const float* v2)
+{
+    dest[0] = v1[0] - v2[0];
+    dest[1] = v1[1] - v2[1];
+    dest[2] = v1[2] - v2[2];
+}
+bool intersectSegmentTriangle(const float* sp, const float* sq,
+    const float* a, const float* b, const float* c,
+    float& t)
+{
+    float v, w;
+    float ab[3], ac[3], qp[3], ap[3], norm[3], e[3];
+    rcVsub(ab, b, a);
+    rcVsub(ac, c, a);
+    rcVsub(qp, sp, sq);
+
+    // Compute triangle normal. Can be precalculated or cached if
+    // intersecting multiple segments against the same triangle
+    rcVcross(norm, ab, ac);
+
+    // Compute denominator d. If d <= 0, segment is parallel to or points
+    // away from triangle, so exit early
+    float d = rcVdot(qp, norm);
+    if (d <= 0.0f) return false;
+
+    // Compute intersection t value of pq with plane of triangle. A ray
+    // intersects iff 0 <= t. Segment intersects iff 0 <= t <= 1. Delay
+    // dividing by d until intersection has been found to pierce triangle
+    rcVsub(ap, sp, a);
+    t = rcVdot(ap, norm);
+    if (t < 0.0f) return false;
+    if (t > d) return false; // For segment; exclude this code line for a ray test
+
+    // Compute barycentric coordinate components and test if within bounds
+    rcVcross(e, qp, ap);
+    v = rcVdot(ac, e);
+    if (v < 0.0f || v > d) return false;
+    w = -rcVdot(ab, e);
+    if (w < 0.0f || v + w > d) return false;
+
+    // Segment/ray intersects triangle. Perform delayed division
+    t /= d;
+
+    return true;
+}
 
 
 void stress_2d()
@@ -282,8 +338,24 @@ void stress_2d()
     g_tr[0]._cur_locked_specify = 0;
 
 
-
-
+    float a[3] = { -3.0f, 3.0f, 1.0f };
+    float b[3] = { 3.0f, 3.0f, 1.0f };
+    float c[3] = { 0.0f, -3.0f, 1.0f };
+    float sp[3] = { 0.0f, 0.0f, 5.0f };
+    float sq[3] = { 0.0f, 0.0f, -5.0f };
+    float ret = 0.0f;
+    double now = Now();
+    float testz = -5.0f;
+    float sum = .0f;
+    for (size_t i = 0; i < 1000 * 10000; i++)
+    {
+        sp[0] = 0.0f + (rand() % 100) / 1000.0f;
+        sp[2] = testz * -1.0f  + ((i%2) * -1 * testz * 2);
+        sq[2] = sp[2] * -1.0f;
+        intersectSegmentTriangle(sp, sq, a, b, c, ret);
+        sum += ret;
+    }
+    LOGI("intersectSegmentTriangle used:" << (Now() - now)  << "s when test 1000*10000. " << sum);
 }
 
 int main(void)
